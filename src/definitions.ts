@@ -1,3 +1,5 @@
+import { WebPlugin } from '@capacitor/core';
+
 declare module "@capacitor/core" {
   interface PluginRegistry {
     BluetoothAndroidPlugin: BluetoothAndroidPlugin;
@@ -15,7 +17,7 @@ export interface BluetoothAndroidPluginResult<T> {
   result: T;
 }
 
-export interface BluetoothAndroidPlugin {
+export interface BluetoothAndroidPlugin extends WebPlugin {
   list(): Promise<BluetoothAndroidPluginResult<BluetoothDevice[]>>;
   connect(id:string): Promise<BluetoothAndroidPluginResult<boolean>>;
   disconnect(id:string): Promise<void>;
