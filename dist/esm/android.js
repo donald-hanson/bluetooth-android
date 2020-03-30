@@ -39,7 +39,9 @@ export class BluetoothAndroid {
         });
     }
     subscribe(id, callback) {
-        return BluetoothAndroidPlugin.subscribe({ id }, callback);
+        return BluetoothAndroidPlugin.subscribe({ id }, (data, err) => {
+            callback(data === null || data === void 0 ? void 0 : data.result, err);
+        });
     }
     unsubscribe(id, subscription) {
         return __awaiter(this, void 0, void 0, function* () {

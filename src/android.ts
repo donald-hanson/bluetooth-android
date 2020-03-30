@@ -27,7 +27,9 @@ export class BluetoothAndroid {
     }
 
     public subscribe(id: string, callback: (data:string, err?:any) => void) : string {
-        return BluetoothAndroidPlugin.subscribe({id}, callback);
+        return BluetoothAndroidPlugin.subscribe({id}, (data:{result:string},err?:any) => {
+            callback(data?.result, err);
+        });
     }
 
     public async unsubscribe(id: string, subscription: string): Promise<void> {

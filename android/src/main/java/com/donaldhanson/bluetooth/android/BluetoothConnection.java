@@ -72,6 +72,7 @@ class BluetoothConnection
     }
 
     synchronized void subscribe(PluginCall call) {
+        call.save();
         subscribedCalls.put(call.getCallbackId(), call);
     }
 
@@ -139,6 +140,8 @@ class BluetoothConnection
     }
 
     private synchronized void messageRead(String data) {
+        Log.d(TAG, String.format("New message read: %s", data));
+
         buffer.append(data);
 
         sendDataToSubscribers();
@@ -156,7 +159,7 @@ class BluetoothConnection
         String data = "";
         int index = buffer.indexOf(c, 0);
         if (index > -1) {
-            data = buffer.substring(0, index + c.length());
+            data = buffer.substring(0, index);
             buffer.delete(0, index + c.length());
         }
         return data;
@@ -164,9 +167,11 @@ class BluetoothConnection
 
 
     private void sendDataToSubscribers(String data) {
+        Log.d(TAG,String.format("Sending data to subscribers: %s", data));
         for(Map.Entry<String, PluginCall> entry: subscribedCalls.entrySet()) {
             PluginCall call = entry.getValue();
             if (call != null) {
+                Log.d(TAG,String.format("Sending data to subscriber %s. Data: %s", entry.getKey(), data));
                 JSObject object = new JSObject();
                 object.put("result", data);
                 call.success(object);
