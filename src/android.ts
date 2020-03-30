@@ -10,19 +10,19 @@ export class BluetoothAndroid {
     }
 
     public async connect(id: string): Promise<void> {
-        await BluetoothAndroidPlugin.connect(id);
+        await BluetoothAndroidPlugin.connect({id});
     }
 
     public async disconnect(id: string): Promise<void> {
-        await BluetoothAndroidPlugin.disconnect(id);
+        await BluetoothAndroidPlugin.disconnect({id});
     }
 
     public async isConnected(id: string): Promise<boolean> {
-        var isConnected = await BluetoothAndroidPlugin.isConnected(id);
+        var isConnected = await BluetoothAndroidPlugin.isConnected({id});
         return isConnected.result;
     }
 
     public async write(id: string, data:string): Promise<void> {
-        await BluetoothAndroidPlugin.write(id, data);
+        await BluetoothAndroidPlugin.write({id, data});
     }
 }

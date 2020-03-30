@@ -19,23 +19,23 @@ export class BluetoothAndroid {
     }
     connect(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield BluetoothAndroidPlugin.connect(id);
+            yield BluetoothAndroidPlugin.connect({ id });
         });
     }
     disconnect(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield BluetoothAndroidPlugin.disconnect(id);
+            yield BluetoothAndroidPlugin.disconnect({ id });
         });
     }
     isConnected(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            var isConnected = yield BluetoothAndroidPlugin.isConnected(id);
+            var isConnected = yield BluetoothAndroidPlugin.isConnected({ id });
             return isConnected.result;
         });
     }
     write(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield BluetoothAndroidPlugin.write(id, data);
+            yield BluetoothAndroidPlugin.write({ id, data });
         });
     }
 }

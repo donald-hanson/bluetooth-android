@@ -9,6 +9,7 @@ import com.getcapacitor.PluginMethod;
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.util.Log;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -20,6 +21,8 @@ import java.util.Set;
         }
 )
 public class BluetoothAndroidPlugin extends Plugin {
+    private static final String TAG = "BluetoothAndroidPlugin";
+    private static final boolean D = true;
 
     private BluetoothAdapter _bluetoothAdapter;
     private HashMap<String, BluetoothConnection> _connections = new HashMap<>();
@@ -31,13 +34,19 @@ public class BluetoothAndroidPlugin extends Plugin {
 
     @PluginMethod()
     public void list(PluginCall call) {
+        Log.d(TAG, "Getting device list");
+
         Set<BluetoothDevice> bondedDevices = _bluetoothAdapter.getBondedDevices();
+
+        Log.d(TAG, String.format("Found %d bonded devices", bondedDevices.size()));
 
         JSArray devices = new JSArray();
 
         for (BluetoothDevice device : bondedDevices) {
             devices.put(deviceToJSObject(device));
         }
+
+        Log.d(TAG, String.format("Formatted %d devices", devices.length()));
 
         JSObject ret = new JSObject();
         ret.put("result", devices);
@@ -48,7 +57,7 @@ public class BluetoothAndroidPlugin extends Plugin {
     public void connect(PluginCall call) {
         String address = call.getString("id");
         if (address == null) {
-            call.reject("Property id is required");
+            call.reject("Property id is required to start connection");
             return;
         }
 
@@ -85,7 +94,7 @@ public class BluetoothAndroidPlugin extends Plugin {
     public void disconnect(PluginCall call) {
         String address = call.getString("id");
         if (address == null) {
-            call.reject("Property id is required");
+            call.reject("Property id is required to disconnect connection");
             return;
         }
 
@@ -104,7 +113,7 @@ public class BluetoothAndroidPlugin extends Plugin {
     public void isConnected(PluginCall call) {
         String address = call.getString("id");
         if (address == null) {
-            call.reject("Property id is required");
+            call.reject("Property id is required to check connection status");
             return;
         }
 
@@ -124,13 +133,13 @@ public class BluetoothAndroidPlugin extends Plugin {
     public void write(PluginCall call) {
         String address = call.getString("id");
         if (address == null) {
-            call.reject("Property id is required");
+            call.reject("Property id is required to write to connection");
             return;
         }
 
         String data = call.getString("data");
         if (data == null) {
-            call.reject("Property data is required");
+            call.reject("Property data is required to write to connection");
             return;
         }
 

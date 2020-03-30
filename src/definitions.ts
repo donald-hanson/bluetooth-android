@@ -17,12 +17,20 @@ export interface BluetoothAndroidPluginResult<T> {
   result: T;
 }
 
+export interface BluetoothAndroidPluginRequest {
+  id: string;
+}
+
+export interface BluetoothAndroidPluginWriteRequest extends BluetoothAndroidPluginRequest {
+  data: string;
+}
+
 export interface BluetoothAndroidPlugin extends WebPlugin {
   list(): Promise<BluetoothAndroidPluginResult<BluetoothDevice[]>>;
-  connect(id:string): Promise<BluetoothAndroidPluginResult<boolean>>;
-  disconnect(id:string): Promise<void>;
-  isConnected(id:string): Promise<BluetoothAndroidPluginResult<boolean>>;
-  write(id:string, data:string): Promise<void>;
-  // subscribe(id:string): Promise<BluetoothAndroidPluginResult<string>>;
-  // unsubscribe(id:string): Promise<void>;
+  connect(request: BluetoothAndroidPluginRequest): Promise<BluetoothAndroidPluginResult<boolean>>;
+  disconnect(request: BluetoothAndroidPluginRequest): Promise<void>;
+  isConnected(request: BluetoothAndroidPluginRequest): Promise<BluetoothAndroidPluginResult<boolean>>;
+  write(request: BluetoothAndroidPluginWriteRequest): Promise<void>;
+  // subscribe(request: BluetoothAndroidPluginRequest): Promise<BluetoothAndroidPluginResult<string>>;
+  // unsubscribe(request: BluetoothAndroidPluginRequest): Promise<void>;
 }
