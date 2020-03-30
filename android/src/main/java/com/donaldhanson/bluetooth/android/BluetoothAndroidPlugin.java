@@ -71,6 +71,7 @@ public class BluetoothAndroidPlugin extends Plugin {
                 return;
             }
 
+            connection.unsubscribeAll(bridge);
             _connections.remove(address);
         }
 
@@ -101,6 +102,7 @@ public class BluetoothAndroidPlugin extends Plugin {
         BluetoothConnection connection = _connections.get(address);
 
         if (connection != null) {
+            connection.unsubscribeAll(bridge);
             connection.disconnect();
             _connections.remove(address);
         }
@@ -154,6 +156,47 @@ public class BluetoothAndroidPlugin extends Plugin {
 
         JSObject ret = new JSObject();
         call.resolve(ret);
+    }
+
+    @PluginMethod(returnType=PluginMethod.RETURN_CALLBACK)
+    public void subscribe(PluginCall call) {
+        String address = call.getString("id");
+        if (address == null) {
+            call.reject("Property id is required to subscribe to connection");
+            return;
+        }
+
+        BluetoothConnection connection = _connections.get(address);
+
+        if (connection == null || !connection.getIsConnected()) {
+            call.reject("Device is not connected");
+            return;
+        }
+
+        connection.subscribe(call);
+    }
+
+    @PluginMethod()
+    public void unsubscribe(PluginCall call) {
+        String address = call.getString("id");
+        if (address == null) {
+            call.reject("Property id is required to unsubscribe from connection");
+            return;
+        }
+
+        String callbackId = call.getString("subscription");
+        if (callbackId == null) {
+            call.reject("Property subscription is required to unsubscribe from connection");
+            return;
+        }
+
+        BluetoothConnection connection = _connections.get(address);
+
+        if (connection != null) {
+            connection.unsubscribe(callbackId, bridge);
+        }
+
+        call.resolve();
     }
 
     private JSObject deviceToJSObject(BluetoothDevice device) {

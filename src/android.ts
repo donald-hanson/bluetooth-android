@@ -25,4 +25,12 @@ export class BluetoothAndroid {
     public async write(id: string, data:string): Promise<void> {
         await BluetoothAndroidPlugin.write({id, data});
     }
+
+    public subscribe(id: string, callback: (data:string, err?:any) => void) : string {
+        return BluetoothAndroidPlugin.subscribe({id}, callback);
+    }
+
+    public async unsubscribe(id: string, subscription: string): Promise<void> {
+        await BluetoothAndroidPlugin.unsubscribe({id,subscription});
+    }
 }

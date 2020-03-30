@@ -6,18 +6,24 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import com.getcapacitor.Bridge;
+import com.getcapacitor.JSObject;
+import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 class BluetoothConnection
 {
     private static final String TAG = "BluetoothSerialService";
     private static final boolean D = true;
+    private static final String delimiter = "\n";
 
     private static final UUID UUID_SPP = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
@@ -34,6 +40,8 @@ class BluetoothConnection
     private ConnectThread _connectThread;
     private TransmissionThread _transmissionThread;
     private int mState;
+    private HashMap<String, PluginCall> subscribedCalls = new HashMap<>();
+    StringBuffer buffer = new StringBuffer();
 
     BluetoothConnection(BluetoothAdapter adapter, BluetoothDevice device) {
         _adapter = adapter;
@@ -50,6 +58,7 @@ class BluetoothConnection
     }
 
     synchronized void connect(ConnectCallback callback) {
+        buffer.setLength(0);
         cancelThreads();
 
         _connectThread = new ConnectThread(_adapter, _device, false, callback);
@@ -60,6 +69,31 @@ class BluetoothConnection
     synchronized void disconnect() {
         cancelThreads();
         setState(STATE_DISCONNECTED);
+    }
+
+    synchronized void subscribe(PluginCall call) {
+        subscribedCalls.put(call.getCallbackId(), call);
+    }
+
+    synchronized void unsubscribe(String callbackId, Bridge bridge) {
+        if (callbackId != null) {
+            if (subscribedCalls.containsKey(callbackId)) {
+                PluginCall call = subscribedCalls.remove(callbackId);
+                if (call != null) {
+                    call.release(bridge);
+                }
+            }
+        }
+    }
+
+    synchronized void unsubscribeAll(Bridge bridge) {
+        for(Map.Entry<String, PluginCall> entry: subscribedCalls.entrySet()) {
+            PluginCall call = entry.getValue();
+            if (call != null) {
+                call.release(bridge);
+            }
+        }
+        subscribedCalls.clear();
     }
 
     void write(String data) {
@@ -105,7 +139,39 @@ class BluetoothConnection
     }
 
     private synchronized void messageRead(String data) {
+        buffer.append(data);
 
+        sendDataToSubscribers();
+    }
+
+    private void sendDataToSubscribers() {
+        String data = readUntil(delimiter);
+        if (data != null && data.length() > 0) {
+            sendDataToSubscribers(data);
+            sendDataToSubscribers();
+        }
+    }
+
+    private String readUntil(String c) {
+        String data = "";
+        int index = buffer.indexOf(c, 0);
+        if (index > -1) {
+            data = buffer.substring(0, index + c.length());
+            buffer.delete(0, index + c.length());
+        }
+        return data;
+    }
+
+
+    private void sendDataToSubscribers(String data) {
+        for(Map.Entry<String, PluginCall> entry: subscribedCalls.entrySet()) {
+            PluginCall call = entry.getValue();
+            if (call != null) {
+                JSObject object = new JSObject();
+                object.put("result", data);
+                call.success(object);
+            }
+        }
     }
 
     private synchronized void messageReadRaw(byte[] data) {

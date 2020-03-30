@@ -19,10 +19,16 @@ export interface BluetoothAndroidPluginRequest {
 export interface BluetoothAndroidPluginWriteRequest extends BluetoothAndroidPluginRequest {
     data: string;
 }
+export interface BluetoothAndroidPluginUnsubscribeRequest extends BluetoothAndroidPluginRequest {
+    subscription: string;
+}
+export declare type BluetoothAndroidMessageCallback = (data: string, err?: any) => void;
 export interface BluetoothAndroidPlugin extends WebPlugin {
     list(): Promise<BluetoothAndroidPluginResult<BluetoothDevice[]>>;
     connect(request: BluetoothAndroidPluginRequest): Promise<BluetoothAndroidPluginResult<boolean>>;
     disconnect(request: BluetoothAndroidPluginRequest): Promise<void>;
     isConnected(request: BluetoothAndroidPluginRequest): Promise<BluetoothAndroidPluginResult<boolean>>;
     write(request: BluetoothAndroidPluginWriteRequest): Promise<void>;
+    subscribe(request: BluetoothAndroidPluginRequest, callback: BluetoothAndroidMessageCallback): string;
+    unsubscribe(request: BluetoothAndroidPluginUnsubscribeRequest): Promise<void>;
 }

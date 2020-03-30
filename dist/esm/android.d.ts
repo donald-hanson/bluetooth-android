@@ -6,4 +6,6 @@ export declare class BluetoothAndroid {
     disconnect(id: string): Promise<void>;
     isConnected(id: string): Promise<boolean>;
     write(id: string, data: string): Promise<void>;
+    subscribe(id: string, callback: (data: string, err?: any) => void): string;
+    unsubscribe(id: string, subscription: string): Promise<void>;
 }
