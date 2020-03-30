@@ -8,4 +8,5 @@ export declare class BluetoothAndroid {
     write(id: string, data: string): Promise<void>;
     subscribe(id: string, callback: (data: string, err?: any) => void): string;
     unsubscribe(id: string, subscription: string): Promise<void>;
+    setDelimiter(id: string, delimiter: string): Promise<void>;
 }

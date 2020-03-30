@@ -199,6 +199,29 @@ public class BluetoothAndroidPlugin extends Plugin {
         call.resolve();
     }
 
+    @PluginMethod()
+    public void setDelimiter(PluginCall call) {
+        String address = call.getString("id");
+        if (address == null) {
+            call.reject("Property id is required to set delimiter");
+            return;
+        }
+
+        String delimiter = call.getString("delimiter");
+        if (delimiter == null || delimiter.length() <= 0) {
+            call.reject("Property delimiter is required to set delimiter");
+            return;
+        }
+
+        BluetoothConnection connection = _connections.get(address);
+
+        if (connection != null) {
+            connection.setDelimiter(delimiter);
+        }
+
+        call.resolve();
+    }
+
     private JSObject deviceToJSObject(BluetoothDevice device) {
         JSObject object = new JSObject();
         object.put("name", device.getName());

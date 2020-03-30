@@ -48,5 +48,10 @@ export class BluetoothAndroid {
             yield BluetoothAndroidPlugin.unsubscribe({ id, subscription });
         });
     }
+    setDelimiter(id, delimiter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield BluetoothAndroidPlugin.setDelimiter({ id, delimiter });
+        });
+    }
 }
 //# sourceMappingURL=android.js.map

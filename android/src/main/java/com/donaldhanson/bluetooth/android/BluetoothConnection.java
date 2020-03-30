@@ -2,13 +2,11 @@ package com.donaldhanson.bluetooth.android;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 import com.getcapacitor.Bridge;
 import com.getcapacitor.JSObject;
-import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 
 import java.io.IOException;
@@ -23,7 +21,6 @@ class BluetoothConnection
 {
     private static final String TAG = "BluetoothSerialService";
     private static final boolean D = true;
-    private static final String delimiter = "\n";
 
     private static final UUID UUID_SPP = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
@@ -39,9 +36,10 @@ class BluetoothConnection
     private BluetoothAdapter _adapter;
     private ConnectThread _connectThread;
     private TransmissionThread _transmissionThread;
-    private int mState;
-    private HashMap<String, PluginCall> subscribedCalls = new HashMap<>();
-    StringBuffer buffer = new StringBuffer();
+    private int _state;
+    private HashMap<String, PluginCall> _subscribedCalls = new HashMap<>();
+    private String _delimiter = "\r\n";
+    private StringBuffer _buffer = new StringBuffer();
 
     BluetoothConnection(BluetoothAdapter adapter, BluetoothDevice device) {
         _adapter = adapter;
@@ -49,16 +47,16 @@ class BluetoothConnection
     }
 
     private synchronized void setState(int state) {
-        if (D) Log.d(TAG, "setState() " + mState + " -> " + state);
-        mState = state;
+        if (D) Log.d(TAG, "setState() " + _state + " -> " + state);
+        _state = state;
     }
 
     synchronized boolean getIsConnected() {
-        return mState == STATE_CONNECTED;
+        return _state == STATE_CONNECTED;
     }
 
     synchronized void connect(ConnectCallback callback) {
-        buffer.setLength(0);
+        _buffer.setLength(0);
         cancelThreads();
 
         _connectThread = new ConnectThread(_adapter, _device, false, callback);
@@ -73,13 +71,13 @@ class BluetoothConnection
 
     synchronized void subscribe(PluginCall call) {
         call.save();
-        subscribedCalls.put(call.getCallbackId(), call);
+        _subscribedCalls.put(call.getCallbackId(), call);
     }
 
     synchronized void unsubscribe(String callbackId, Bridge bridge) {
         if (callbackId != null) {
-            if (subscribedCalls.containsKey(callbackId)) {
-                PluginCall call = subscribedCalls.remove(callbackId);
+            if (_subscribedCalls.containsKey(callbackId)) {
+                PluginCall call = _subscribedCalls.remove(callbackId);
                 if (call != null) {
                     call.release(bridge);
                 }
@@ -88,23 +86,28 @@ class BluetoothConnection
     }
 
     synchronized void unsubscribeAll(Bridge bridge) {
-        for(Map.Entry<String, PluginCall> entry: subscribedCalls.entrySet()) {
+        for(Map.Entry<String, PluginCall> entry: _subscribedCalls.entrySet()) {
             PluginCall call = entry.getValue();
             if (call != null) {
                 call.release(bridge);
             }
         }
-        subscribedCalls.clear();
+        _subscribedCalls.clear();
     }
 
     void write(String data) {
         TransmissionThread r;
         synchronized (this) {
-            if (mState != STATE_CONNECTED)
+            if (_state != STATE_CONNECTED)
                 return;
             r = _transmissionThread;
         }
         r.write(data.getBytes());
+    }
+
+    synchronized void setDelimiter(String newDelimiter) {
+
+        _delimiter = newDelimiter;
     }
 
     private synchronized void cancelThreads() {
@@ -142,13 +145,13 @@ class BluetoothConnection
     private synchronized void messageRead(String data) {
         Log.d(TAG, String.format("New message read: %s", data));
 
-        buffer.append(data);
+        _buffer.append(data);
 
         sendDataToSubscribers();
     }
 
     private void sendDataToSubscribers() {
-        String data = readUntil(delimiter);
+        String data = readUntil(_delimiter);
         if (data != null && data.length() > 0) {
             sendDataToSubscribers(data);
             sendDataToSubscribers();
@@ -157,10 +160,10 @@ class BluetoothConnection
 
     private String readUntil(String c) {
         String data = "";
-        int index = buffer.indexOf(c, 0);
+        int index = _buffer.indexOf(c, 0);
         if (index > -1) {
-            data = buffer.substring(0, index);
-            buffer.delete(0, index + c.length());
+            data = _buffer.substring(0, index);
+            _buffer.delete(0, index + c.length());
         }
         return data;
     }
@@ -168,7 +171,7 @@ class BluetoothConnection
 
     private void sendDataToSubscribers(String data) {
         Log.d(TAG,String.format("Sending data to subscribers: %s", data));
-        for(Map.Entry<String, PluginCall> entry: subscribedCalls.entrySet()) {
+        for(Map.Entry<String, PluginCall> entry: _subscribedCalls.entrySet()) {
             PluginCall call = entry.getValue();
             if (call != null) {
                 Log.d(TAG,String.format("Sending data to subscriber %s. Data: %s", entry.getKey(), data));

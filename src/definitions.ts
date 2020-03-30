@@ -29,6 +29,10 @@ export interface BluetoothAndroidPluginUnsubscribeRequest extends BluetoothAndro
   subscription: string;
 }
 
+export interface BluetoothAndroidPluginSetDelimiterRequest extends BluetoothAndroidPluginRequest {
+  delimiter: string;
+}
+
 export type BluetoothAndroidMessageCallback = (data:string, err?: any) => void;
 
 export interface BluetoothAndroidPlugin extends WebPlugin {
@@ -39,4 +43,5 @@ export interface BluetoothAndroidPlugin extends WebPlugin {
   write(request: BluetoothAndroidPluginWriteRequest): Promise<void>;
   subscribe(request: BluetoothAndroidPluginRequest, callback: BluetoothAndroidMessageCallback): string;
   unsubscribe(request: BluetoothAndroidPluginUnsubscribeRequest): Promise<void>;
+  setDelimiter(request: BluetoothAndroidPluginSetDelimiterRequest): Promise<void>;
 }
