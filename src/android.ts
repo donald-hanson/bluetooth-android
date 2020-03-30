@@ -35,8 +35,4 @@ export class BluetoothAndroid {
     public async unsubscribe(id: string, subscription: string): Promise<void> {
         await BluetoothAndroidPlugin.unsubscribe({id,subscription});
     }
-
-    public async setDelimiter(id: string, delimiter: string): Promise<void> {
-        await BluetoothAndroidPlugin.setDelimiter({id,delimiter});
-    }
 }

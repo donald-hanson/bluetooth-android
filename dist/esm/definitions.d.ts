@@ -22,9 +22,6 @@ export interface BluetoothAndroidPluginWriteRequest extends BluetoothAndroidPlug
 export interface BluetoothAndroidPluginUnsubscribeRequest extends BluetoothAndroidPluginRequest {
     subscription: string;
 }
-export interface BluetoothAndroidPluginSetDelimiterRequest extends BluetoothAndroidPluginRequest {
-    delimiter: string;
-}
 export declare type BluetoothAndroidMessageCallback = (data: string, err?: any) => void;
 export interface BluetoothAndroidPlugin extends WebPlugin {
     list(): Promise<BluetoothAndroidPluginResult<BluetoothDevice[]>>;
@@ -34,5 +31,4 @@ export interface BluetoothAndroidPlugin extends WebPlugin {
     write(request: BluetoothAndroidPluginWriteRequest): Promise<void>;
     subscribe(request: BluetoothAndroidPluginRequest, callback: BluetoothAndroidMessageCallback): string;
     unsubscribe(request: BluetoothAndroidPluginUnsubscribeRequest): Promise<void>;
-    setDelimiter(request: BluetoothAndroidPluginSetDelimiterRequest): Promise<void>;
 }

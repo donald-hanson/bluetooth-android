@@ -1,5 +1,6 @@
 package com.donaldhanson.bluetooth.android;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -38,8 +39,6 @@ class BluetoothConnection
     private TransmissionThread _transmissionThread;
     private int _state;
     private HashMap<String, PluginCall> _subscribedCalls = new HashMap<>();
-    private String _delimiter = "\r\n";
-    private StringBuffer _buffer = new StringBuffer();
 
     BluetoothConnection(BluetoothAdapter adapter, BluetoothDevice device) {
         _adapter = adapter;
@@ -56,7 +55,6 @@ class BluetoothConnection
     }
 
     synchronized void connect(ConnectCallback callback) {
-        _buffer.setLength(0);
         cancelThreads();
 
         _connectThread = new ConnectThread(_adapter, _device, false, callback);
@@ -105,11 +103,6 @@ class BluetoothConnection
         r.write(data.getBytes());
     }
 
-    synchronized void setDelimiter(String newDelimiter) {
-
-        _delimiter = newDelimiter;
-    }
-
     private synchronized void cancelThreads() {
         if (_connectThread != null) {
             _connectThread.cancel();
@@ -142,32 +135,11 @@ class BluetoothConnection
         setState(STATE_LOST);
     }
 
+    @SuppressLint("DefaultLocale")
     private synchronized void messageRead(String data) {
         Log.d(TAG, String.format("New message read: %s", data));
-
-        _buffer.append(data);
-
-        sendDataToSubscribers();
+        sendDataToSubscribers(data);
     }
-
-    private void sendDataToSubscribers() {
-        String data = readUntil(_delimiter);
-        if (data != null && data.length() > 0) {
-            sendDataToSubscribers(data);
-            sendDataToSubscribers();
-        }
-    }
-
-    private String readUntil(String c) {
-        String data = "";
-        int index = _buffer.indexOf(c, 0);
-        if (index > -1) {
-            data = _buffer.substring(0, index);
-            _buffer.delete(0, index + c.length());
-        }
-        return data;
-    }
-
 
     private void sendDataToSubscribers(String data) {
         Log.d(TAG,String.format("Sending data to subscribers: %s", data));
