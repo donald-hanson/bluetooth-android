@@ -1,5 +1,9 @@
 import Foundation
 import Capacitor
+import ExternalAccessory
+import UIKit
+
+typealias JSObject = [String:Any]
 
 /**
  * Please read the Capacitor iOS Plugin Development Guide
@@ -8,10 +12,23 @@ import Capacitor
 @objc(BluetoothAndroidPlugin)
 public class BluetoothAndroidPlugin: CAPPlugin {
     
-    @objc func echo(_ call: CAPPluginCall) {
-        let value = call.getString("value") ?? ""
+    @objc func list(_ call: CAPPluginCall) {
+        var devices = [JSObject]()
+                
+        let connectedAccessories = EAAccessoryManager.shared().connectedAccessories
+        
+        for connectedAccessory in connectedAccessories {
+            var device = JSObject()
+            
+            device["name"] = connectedAccessory.name
+            device["id"] = connectedAccessory.connectionID
+            device["address"] = connectedAccessory.serialNumber
+            
+            devices.append(device)
+        }
+        
         call.success([
-            "value": value
+            "result": devices
         ])
     }
 }
